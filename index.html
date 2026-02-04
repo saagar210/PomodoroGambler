@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraFlow - Pomodoro Gambler</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/polymarket-theme.css">
+</head>
+<body>
+    <div id="loading-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0a0a0a; color: #ffffff;">
+        <div class="spinner" style="margin-bottom: 1rem;"></div>
+        <p>Loading AuraFlow...</p>
+    </div>
+
+    <div id="app" style="display: none;">
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">AuraFlow</h1>
+                <div id="balance-display"></div>
+            </div>
+        </header>
+
+        <nav id="tab-navigator"></nav>
+
+        <main class="app-main">
+            <div id="dashboard" class="tab-content"></div>
+            <div id="timer" class="tab-content"></div>
+            <div id="history" class="tab-content"></div>
+        </main>
+
+        <div id="toast-container"></div>
+    </div>
+
+    <!-- sql.js library -->
+    <script src="lib/sql-wasm.js"></script>
+
+    <!-- Core -->
+    <script type="module" src="js/core/eventbus.js"></script>
+    <script type="module" src="js/core/state.js"></script>
+    <script type="module" src="js/core/storage.js"></script>
+    <script type="module" src="js/core/database.js"></script>
+
+    <!-- Models -->
+    <script type="module" src="js/models/User.js"></script>
+    <script type="module" src="js/models/WorkSession.js"></script>
+    <script type="module" src="js/models/BettingEvent.js"></script>
+    <script type="module" src="js/models/Transaction.js"></script>
+    <script type="module" src="js/models/CoinBalance.js"></script>
+
+    <!-- Services -->
+    <script type="module" src="js/services/BalanceService.js"></script>
+    <script type="module" src="js/services/TimerService.js"></script>
+    <script type="module" src="js/services/BettingService.js"></script>
+    <script type="module" src="js/services/HistoryService.js"></script>
+
+    <!-- Components -->
+    <script type="module" src="js/components/BalanceDisplay.js"></script>
+    <script type="module" src="js/components/TabNavigator.js"></script>
+    <script type="module" src="js/components/EventCard.js"></script>
+    <script type="module" src="js/components/Dashboard.js"></script>
+    <script type="module" src="js/components/PomodoroTimer.js"></script>
+    <script type="module" src="js/components/History.js"></script>
+
+    <!-- Utils -->
+    <script type="module" src="js/utils/constants.js"></script>
+    <script type="module" src="js/utils/formatters.js"></script>
+    <script type="module" src="js/utils/validators.js"></script>
+
+    <!-- Main -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

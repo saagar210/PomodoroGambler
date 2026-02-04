@@ -1,0 +1,146 @@
+[
+    {
+        "title": "Lakers win NBA Championship 2026",
+        "description": "Will the Los Angeles Lakers win the 2026 NBA Championship?",
+        "category": "Sports",
+        "odds_yes": 0.35,
+        "odds_no": 0.65,
+        "resolution_date": "2026-06-20"
+    },
+    {
+        "title": "Bitcoin reaches $150K by end of 2026",
+        "description": "Will Bitcoin's price reach $150,000 USD by December 31, 2026?",
+        "category": "Tech",
+        "odds_yes": 0.42,
+        "odds_no": 0.58,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "Team Liquid wins The International 2026",
+        "description": "Will Team Liquid win The International Dota 2 Championship 2026?",
+        "category": "Gaming",
+        "odds_yes": 0.28,
+        "odds_no": 0.72,
+        "resolution_date": "2026-08-15"
+    },
+    {
+        "title": "Chiefs win Super Bowl LXI",
+        "description": "Will the Kansas City Chiefs win Super Bowl LXI?",
+        "category": "Sports",
+        "odds_yes": 0.45,
+        "odds_no": 0.55,
+        "resolution_date": "2027-02-07"
+    },
+    {
+        "title": "OpenAI releases GPT-5 in 2026",
+        "description": "Will OpenAI announce and release GPT-5 before end of 2026?",
+        "category": "Tech",
+        "odds_yes": 0.67,
+        "odds_no": 0.33,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "FaZe Clan wins Valorant Champions 2026",
+        "description": "Will FaZe Clan win the Valorant Champions tournament in 2026?",
+        "category": "Gaming",
+        "odds_yes": 0.31,
+        "odds_no": 0.69,
+        "resolution_date": "2026-09-10"
+    },
+    {
+        "title": "Tesla stock above $400 by Q3 2026",
+        "description": "Will Tesla's stock price be above $400 by end of Q3 2026?",
+        "category": "Tech",
+        "odds_yes": 0.52,
+        "odds_no": 0.48,
+        "resolution_date": "2026-09-30"
+    },
+    {
+        "title": "Manchester City wins Premier League 2026",
+        "description": "Will Manchester City win the 2025-26 Premier League season?",
+        "category": "Sports",
+        "odds_yes": 0.58,
+        "odds_no": 0.42,
+        "resolution_date": "2026-05-24"
+    },
+    {
+        "title": "GTA 6 releases in 2026",
+        "description": "Will Grand Theft Auto 6 be released before end of 2026?",
+        "category": "Gaming",
+        "odds_yes": 0.73,
+        "odds_no": 0.27,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "Apple launches AR glasses in 2026",
+        "description": "Will Apple announce and release AR glasses in 2026?",
+        "category": "Tech",
+        "odds_yes": 0.39,
+        "odds_no": 0.61,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "Messi wins Ballon d'Or 2026",
+        "description": "Will Lionel Messi win the 2026 Ballon d'Or award?",
+        "category": "Sports",
+        "odds_yes": 0.24,
+        "odds_no": 0.76,
+        "resolution_date": "2026-11-30"
+    },
+    {
+        "title": "Counter-Strike 2 Major won by Team Vitality",
+        "description": "Will Team Vitality win the next CS2 Major tournament?",
+        "category": "Gaming",
+        "odds_yes": 0.33,
+        "odds_no": 0.67,
+        "resolution_date": "2026-07-15"
+    },
+    {
+        "title": "Nvidia releases RTX 6090 in 2026",
+        "description": "Will Nvidia announce and release the RTX 6090 graphics card in 2026?",
+        "category": "Tech",
+        "odds_yes": 0.55,
+        "odds_no": 0.45,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "Golden State Warriors make NBA Playoffs",
+        "description": "Will the Golden State Warriors qualify for the 2026 NBA Playoffs?",
+        "category": "Sports",
+        "odds_yes": 0.68,
+        "odds_no": 0.32,
+        "resolution_date": "2026-04-20"
+    },
+    {
+        "title": "League of Legends: T1 wins Worlds 2026",
+        "description": "Will T1 win the League of Legends World Championship 2026?",
+        "category": "Gaming",
+        "odds_yes": 0.41,
+        "odds_no": 0.59,
+        "resolution_date": "2026-11-05"
+    },
+    {
+        "title": "Meta reaches $600 stock price in 2026",
+        "description": "Will Meta's stock price reach $600 or higher in 2026?",
+        "category": "Tech",
+        "odds_yes": 0.48,
+        "odds_no": 0.52,
+        "resolution_date": "2026-12-31"
+    },
+    {
+        "title": "World Cup 2026: Brazil wins",
+        "description": "Will Brazil win the FIFA World Cup 2026?",
+        "category": "Sports",
+        "odds_yes": 0.37,
+        "odds_no": 0.63,
+        "resolution_date": "2026-07-19"
+    },
+    {
+        "title": "Elden Ring DLC launches in 2026",
+        "description": "Will new Elden Ring DLC be released in 2026?",
+        "category": "Gaming",
+        "odds_yes": 0.62,
+        "odds_no": 0.38,
+        "resolution_date": "2026-12-31"
+    }
+]
