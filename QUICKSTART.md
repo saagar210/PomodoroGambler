@@ -51,6 +51,7 @@ Back in the Dashboard:
 3. 40 coins are deducted from your balance
 4. Bet is recorded with locked odds
 5. View bet history in History tab
+6. Resolve outcomes with `Resolve YES`/`Resolve NO` in History to settle pending bets
 
 ### 4. History Tab
 Track your progress:

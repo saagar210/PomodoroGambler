@@ -56,6 +56,65 @@ class BettingService {
         }
     }
 
+
+    async resolveEvent(eventId, winningSide) {
+        if (!validateBetSide(winningSide)) {
+            eventBus.emit('bet:error', { message: 'Invalid event outcome' });
+            return false;
+        }
+
+        const eventData = database.getResolvableEvent(eventId);
+        if (!eventData) {
+            eventBus.emit('bet:error', { message: 'Event is already resolved or unavailable' });
+            return false;
+        }
+
+        try {
+            const pendingTransactions = database.getPendingTransactionsForEvent(eventId);
+            let totalPayout = 0;
+            let wonCount = 0;
+            let lostCount = 0;
+
+            pendingTransactions.forEach((transaction) => {
+                const isWinner = transaction.bet_side === winningSide;
+                const outcome = isWinner ? 'won' : 'lost';
+                const winnings = isWinner ? Math.floor(transaction.potential_payout) : 0;
+                const netProfit = isWinner
+                    ? winnings - transaction.bet_amount
+                    : -transaction.bet_amount;
+
+                database.resolveTransaction(transaction.id, outcome, winnings, netProfit);
+
+                if (isWinner) {
+                    totalPayout += winnings;
+                    wonCount += 1;
+                } else {
+                    lostCount += 1;
+                }
+            });
+
+            if (totalPayout > 0) {
+                await balanceService.addCoins(totalPayout);
+            }
+
+            await database.resolveEvent(eventId, winningSide);
+
+            eventBus.emit('event:resolved', {
+                eventId,
+                eventTitle: eventData.title,
+                winningSide,
+                totalPayout,
+                wonCount,
+                lostCount
+            });
+
+            return true;
+        } catch (error) {
+            eventBus.emit('bet:error', { message: 'Failed to resolve event' });
+            return false;
+        }
+    }
+
     getActiveEvents(category = null) {
         const eventsData = database.getActiveEvents(category);
         return eventsData.map(e => BettingEvent.fromDatabase(e));

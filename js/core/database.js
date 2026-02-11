@@ -238,6 +238,14 @@ class Database {
         return this.queryOne('SELECT * FROM betting_events WHERE id = ?', [eventId]);
     }
 
+
+    getResolvableEvent(eventId) {
+        return this.queryOne(
+            'SELECT * FROM betting_events WHERE id = ? AND is_active = 1 AND outcome IS NULL',
+            [eventId]
+        );
+    }
+
     // Betting transaction methods
     async createBettingTransaction(eventId, betSide, oddsAtBet, potentialPayout) {
         this.run(`
@@ -263,6 +271,32 @@ class Database {
     getTotalBettingTransactionsCount() {
         const result = this.queryOne('SELECT COUNT(*) as count FROM betting_transactions');
         return result ? result.count : 0;
+    }
+
+
+    getPendingTransactionsForEvent(eventId) {
+        return this.query(`
+            SELECT * FROM betting_transactions
+            WHERE event_id = ? AND outcome = 'pending'
+            ORDER BY created_at ASC
+        `, [eventId]);
+    }
+
+    resolveTransaction(transactionId, outcome, winnings, netProfit) {
+        this.run(`
+            UPDATE betting_transactions
+            SET outcome = ?, winnings = ?, net_profit = ?, resolved_at = datetime('now')
+            WHERE id = ?
+        `, [outcome, winnings, netProfit, transactionId]);
+    }
+
+    async resolveEvent(eventId, winningSide) {
+        this.run(`
+            UPDATE betting_events
+            SET outcome = ?, is_active = 0, resolution_date = datetime('now')
+            WHERE id = ?
+        `, [winningSide, eventId]);
+        await this.save();
     }
 
     // Statistics methods

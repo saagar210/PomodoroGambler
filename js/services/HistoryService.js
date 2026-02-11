@@ -4,6 +4,7 @@ import { database } from '../core/database.js';
 import { WorkSession } from '../models/WorkSession.js';
 import { Transaction } from '../models/Transaction.js';
 import { ITEMS_PER_PAGE } from '../utils/constants.js';
+import { bettingService } from './BettingService.js';
 
 class HistoryService {
     getWorkSessions(page = 1) {
@@ -32,6 +33,11 @@ class HistoryService {
             page,
             totalPages: Math.ceil(total / ITEMS_PER_PAGE)
         };
+    }
+
+
+    async resolveEvent(eventId, winningSide) {
+        return bettingService.resolveEvent(eventId, winningSide);
     }
 
     getStatistics() {

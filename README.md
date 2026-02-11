@@ -13,6 +13,7 @@ A single-user web application that combines Pomodoro time management with virtua
   - Sports, Tech, Gaming, and Politics categories
   - Polymarket-style interface with odds display
   - Fixed 40-coin bet amounts
+  - Manual event resolution in History (YES/NO) with automatic payout settlement
 
 - **Interruption Detection**: Sessions interrupted by closing the browser don't award coins
 
@@ -32,6 +33,7 @@ A single-user web application that combines Pomodoro time management with virtua
 3. Start with 100 coins
 4. Complete work sessions to earn more coins
 5. Place bets on events in the Dashboard
+6. Resolve event outcomes from History to settle winnings
 
 ## Tech Stack
 
