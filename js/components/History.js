@@ -28,9 +28,29 @@ class History {
         this.container.addEventListener('click', (e) => {
             const pageBtn = e.target.closest('.page-btn');
             if (pageBtn) {
-                const page = parseInt(pageBtn.dataset.page);
+                const page = parseInt(pageBtn.dataset.page, 10);
                 this.currentPage[this.activeTab] = page;
                 this.renderActiveTab();
+            }
+        });
+
+        // Resolve event action
+        this.container.addEventListener('click', async (e) => {
+            const resolveBtn = e.target.closest('.resolve-btn');
+            if (!resolveBtn) return;
+
+            resolveBtn.disabled = true;
+
+            const eventId = parseInt(resolveBtn.dataset.eventId, 10);
+            const winningSide = resolveBtn.dataset.outcome;
+            const resolved = await historyService.resolveEvent(eventId, winningSide);
+
+            if (resolved) {
+                this.renderActiveTab();
+                this.renderStats();
+                this.showToast(`Event resolved: ${winningSide.toUpperCase()} won`, 'success');
+            } else {
+                resolveBtn.disabled = false;
             }
         });
 
@@ -44,6 +64,32 @@ class History {
             this.renderActiveTab();
             this.renderStats();
         });
+
+        eventBus.on('event:resolved', ({ eventTitle, totalPayout }) => {
+            this.renderActiveTab();
+            this.renderStats();
+            this.showToast(`${eventTitle} settled. Payout: ${formatCoins(totalPayout)}`, 'success');
+        });
+
+        eventBus.on('bet:error', ({ message }) => {
+            this.showToast(message, 'error');
+        });
+    }
+
+    showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 200ms ease';
+            setTimeout(() => toast.remove(), 200);
+        }, 3200);
     }
 
     updateHistoryTabs() {
@@ -132,6 +178,29 @@ class History {
         `;
     }
 
+    renderOutcomeBadge(outcome) {
+        const statusClassMap = {
+            pending: 'sports',
+            won: 'tech',
+            lost: 'politics'
+        };
+
+        return `<span class="badge badge-${statusClassMap[outcome] || 'sports'}">${outcome}</span>`;
+    }
+
+    renderResolutionActions(tx) {
+        if (tx.outcome !== 'pending') {
+            return '<span class="resolve-note">Resolved</span>';
+        }
+
+        return `
+            <div class="resolve-actions">
+                <button class="resolve-btn yes" data-event-id="${tx.eventId}" data-outcome="yes">Resolve YES</button>
+                <button class="resolve-btn no" data-event-id="${tx.eventId}" data-outcome="no">Resolve NO</button>
+            </div>
+        `;
+    }
+
     renderBetsTable() {
         const container = this.container.querySelector('.bets-content');
         if (!container) return;
@@ -160,6 +229,7 @@ class History {
                             <th>Odds</th>
                             <th>Potential Payout</th>
                             <th>Status</th>
+                            <th>Resolve</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -175,11 +245,8 @@ class History {
                                 <td>${formatCoins(tx.betAmount)}</td>
                                 <td>${(tx.oddsAtBet * 100).toFixed(0)}%</td>
                                 <td>${formatPayout(tx.potentialPayout)}</td>
-                                <td>
-                                    <span class="badge badge-sports">
-                                        ${tx.outcome}
-                                    </span>
-                                </td>
+                                <td>${this.renderOutcomeBadge(tx.outcome)}</td>
+                                <td>${this.renderResolutionActions(tx)}</td>
                             </tr>
                         `).join('')}
                     </tbody>

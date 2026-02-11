@@ -91,7 +91,7 @@ try {
 console.log('Test 5: Timer interruption logic...');
 try {
     const GRACE_PERIOD_MS = 5 * 60 * 1000;
-    const startTime = Date.now() - (20 * 60 * 1000); // 20 minutes ago
+    const startTime = Date.now() - ((20 * 60 * 1000) + 1000); // 20m + 1s ago (past grace boundary)
     const expectedEndTime = startTime + (15 * 60 * 1000); // Should have ended 5 min ago
     const now = Date.now();
 
