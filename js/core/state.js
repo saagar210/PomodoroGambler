@@ -10,10 +10,12 @@ class State {
             activeTab: TABS.DASHBOARD,
             timer: {
                 isRunning: false,
+                isPaused: false,
                 startTime: null,
                 duration: 15,
                 multiplier: 1,
-                elapsedSeconds: 0
+                elapsedSeconds: 0,
+                pausedAtSeconds: 0
             },
             events: [],
             history: {

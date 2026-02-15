@@ -21,3 +21,16 @@ export function validateOdds(odds) {
 export function validateEventId(eventId) {
     return Number.isInteger(eventId) && eventId > 0;
 }
+
+export function validateBetAmount(amount, minBet = 10, maxBet = 1000) {
+    if (!Number.isInteger(amount)) {
+        return { valid: false, error: 'Bet must be whole number' };
+    }
+    if (amount < minBet) {
+        return { valid: false, error: `Minimum bet: ${minBet} coins` };
+    }
+    if (amount > maxBet) {
+        return { valid: false, error: `Maximum bet: ${maxBet} coins` };
+    }
+    return { valid: true };
+}

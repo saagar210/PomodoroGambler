@@ -2,6 +2,8 @@
 
 import { storage } from './core/storage.js';
 import { database } from './core/database.js';
+import { eventBus } from './core/eventbus.js';
+import { state } from './core/state.js';
 import { balanceService } from './services/BalanceService.js';
 import { timerService } from './services/TimerService.js';
 import { bettingService } from './services/BettingService.js';
@@ -10,6 +12,8 @@ import { initTabNavigator } from './components/TabNavigator.js';
 import { initDashboard } from './components/Dashboard.js';
 import { initPomodoroTimer } from './components/PomodoroTimer.js';
 import { initHistory } from './components/History.js';
+import KeyboardManager from './utils/keyboard.js';
+import { TABS } from './utils/constants.js';
 
 class App {
     constructor() {
@@ -41,6 +45,12 @@ class App {
             initPomodoroTimer();
             initHistory();
 
+            // Initialize keyboard shortcuts
+            this.initKeyboardShortcuts();
+
+            // Register service worker for PWA/offline support
+            this.registerServiceWorker();
+
             // Hide loading state
             this.hideLoading();
 
@@ -65,6 +75,114 @@ class App {
         const app = document.getElementById('app');
         if (loadingScreen) loadingScreen.style.display = 'none';
         if (app) app.style.display = 'flex';
+    }
+
+    initKeyboardShortcuts() {
+        const keyboardManager = new KeyboardManager(eventBus);
+
+        // Timer controls
+        keyboardManager.bind('Space', () => {
+            const isRunning = state.get('timer.isRunning');
+            const isPaused = state.get('timer.isPaused');
+
+            if (isPaused) {
+                timerService.resumeFromPause();
+            } else if (isRunning) {
+                timerService.pauseSession();
+            } else {
+                const duration = state.get('timer.duration') || 15;
+                timerService.startSession(duration);
+            }
+        }, 'Start/Pause/Resume timer');
+
+        // Tab navigation
+        keyboardManager.bind('KeyT', () => {
+            state.set('activeTab', TABS.TIMER);
+        }, 'Switch to Timer tab');
+
+        keyboardManager.bind('KeyD', () => {
+            state.set('activeTab', TABS.DASHBOARD);
+        }, 'Switch to Dashboard tab');
+
+        keyboardManager.bind('KeyH', () => {
+            state.set('activeTab', TABS.HISTORY);
+        }, 'Switch to History tab');
+
+        // Help
+        keyboardManager.bind('Slash', () => {
+            keyboardManager.showHelp();
+        }, 'Show keyboard shortcuts');
+
+        // Initialize
+        keyboardManager.init();
+
+        console.log('Keyboard shortcuts initialized');
+    }
+
+    registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((registration) => {
+                    console.log('[App] Service Worker registered:', registration);
+
+                    // Listen for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New SW ready, prompt user to refresh
+                                console.log('[App] App update available. Refresh to get latest version.');
+                                this.showUpdateNotification();
+                            }
+                        });
+                    });
+                })
+                .catch((err) => {
+                    console.warn('[App] Service Worker registration failed:', err);
+                });
+
+            // Listen for online/offline events
+            window.addEventListener('online', () => {
+                this.showToast('Back online!', 'success');
+            });
+
+            window.addEventListener('offline', () => {
+                this.showToast('You are offline. Local data is safe.', 'warning');
+            });
+        }
+    }
+
+    showUpdateNotification() {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast info';
+        toast.innerHTML = `
+            <strong>Update Available</strong><br>
+            Refresh to get the latest version.
+        `;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 8000);
+    }
+
+    showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
     }
 
     showError(message) {

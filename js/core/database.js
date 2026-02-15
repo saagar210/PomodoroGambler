@@ -21,12 +21,30 @@ class Database {
         if (savedDb) {
             // Load existing database
             this.db = new this.SQL.Database(new Uint8Array(savedDb));
+            // Run migrations for existing databases
+            await this.runMigrations();
         } else {
             // Create new database
             this.db = new this.SQL.Database();
             await this.createSchema();
             await this.seedInitialData();
             await this.save();
+        }
+    }
+
+    async runMigrations() {
+        // Migration: Add is_custom column if it doesn't exist
+        try {
+            const columns = this.query("PRAGMA table_info(betting_events)");
+            const hasIsCustom = columns.some(col => col.name === 'is_custom');
+
+            if (!hasIsCustom) {
+                this.run('ALTER TABLE betting_events ADD COLUMN is_custom INTEGER DEFAULT 0');
+                await this.save();
+                console.log('[Database] Migration: Added is_custom column');
+            }
+        } catch (err) {
+            console.warn('[Database] Migration failed:', err);
         }
     }
 

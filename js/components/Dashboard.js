@@ -1,6 +1,7 @@
 // Dashboard component
 
 import { bettingService } from '../services/BettingService.js';
+import { eventCreationService } from '../services/EventCreationService.js';
 import { eventBus } from '../core/eventbus.js';
 import { state } from '../core/state.js';
 import { EventCard } from './EventCard.js';
@@ -31,6 +32,18 @@ class Dashboard {
             this.showToast(message, 'error');
         });
 
+        // Listen for new events
+        eventBus.on('event:created', () => {
+            this.renderEvents();
+        });
+
+        // Create event button
+        this.container.addEventListener('click', async (e) => {
+            if (e.target.id === 'create-event-btn') {
+                await this.createEventPrompt();
+            }
+        });
+
         // Filter buttons
         this.container.addEventListener('click', (e) => {
             const filterBtn = e.target.closest('.filter-btn');
@@ -41,6 +54,32 @@ class Dashboard {
             this.updateFilters();
             this.renderEvents();
         });
+    }
+
+    async createEventPrompt() {
+        const title = prompt('Event title:');
+        if (!title) return;
+
+        const category = prompt('Category (Sports/Tech/Gaming/Politics/Custom):') || 'Custom';
+        const description = prompt('Description (optional):') || '';
+
+        const yesOddsStr = prompt('YES odds (e.g., 0.65 for 65%):');
+        const yesOdds = parseFloat(yesOddsStr);
+
+        const noOddsStr = prompt('NO odds (e.g., 0.35 for 35%):');
+        const noOdds = parseFloat(noOddsStr);
+
+        if (isNaN(yesOdds) || isNaN(noOdds)) {
+            this.showToast('Invalid odds values', 'error');
+            return;
+        }
+
+        try {
+            await eventCreationService.createEvent(title, category, description, yesOdds, noOdds);
+            this.showToast(`Event "${title}" created!`, 'success');
+        } catch (err) {
+            this.showToast(`Error: ${err.message}`, 'error');
+        }
     }
 
     updateFilters() {
@@ -90,12 +129,15 @@ class Dashboard {
 
     render() {
         this.container.innerHTML = `
-            <div class="filter-bar">
-                ${CATEGORIES.map(cat => `
-                    <button class="filter-btn ${cat === this.currentCategory ? 'active' : ''}" data-category="${cat}">
-                        ${cat}
-                    </button>
-                `).join('')}
+            <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="filter-bar">
+                    ${CATEGORIES.map(cat => `
+                        <button class="filter-btn ${cat === this.currentCategory ? 'active' : ''}" data-category="${cat}">
+                            ${cat}
+                        </button>
+                    `).join('')}
+                </div>
+                <button id="create-event-btn" class="btn btn-primary btn-sm">+ Create Event</button>
             </div>
             <div class="events-grid grid grid-auto"></div>
         `;
