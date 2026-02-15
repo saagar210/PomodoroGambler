@@ -38,15 +38,25 @@ class PomodoroTimer {
             }
         });
 
-        // Start/Stop button
+        // Start/Stop/Pause/Resume buttons
         this.container.addEventListener('click', (e) => {
             const controlBtn = e.target.closest('.timer-control-btn');
             if (controlBtn) {
-                if (state.get('timer.isRunning')) {
+                const isRunning = state.get('timer.isRunning');
+                const isPaused = state.get('timer.isPaused');
+
+                if (isPaused) {
+                    timerService.resumeFromPause();
+                } else if (isRunning) {
                     timerService.stopSession();
                 } else {
                     timerService.startSession(this.selectedDuration);
                 }
+            }
+
+            const pauseBtn = e.target.closest('.timer-pause-btn');
+            if (pauseBtn) {
+                timerService.pauseSession();
             }
         });
 
@@ -80,6 +90,10 @@ class PomodoroTimer {
         eventBus.on('session:interrupted', () => {
             this.resetTimerDisplay();
         });
+
+        eventBus.on('timer:paused', () => {
+            this.updateControlButton();
+        });
     }
 
     getDurationConfig(minutes) {
@@ -107,25 +121,58 @@ class PomodoroTimer {
     }
 
     updateControlButton() {
-        const btn = this.container.querySelector('.timer-control-btn');
-        const isRunning = state.get('timer.isRunning');
+        const controlsContainer = this.container.querySelector('.timer-controls');
+        if (!controlsContainer) return;
 
-        if (isRunning) {
-            btn.textContent = 'Stop Session';
-            btn.className = 'btn btn-danger btn-lg timer-control-btn';
+        const isRunning = state.get('timer.isRunning');
+        const isPaused = state.get('timer.isPaused');
+
+        if (isPaused) {
+            // Show Resume and Stop buttons
+            controlsContainer.innerHTML = `
+                <button class="btn btn-success btn-lg timer-control-btn">
+                    Resume Session
+                </button>
+                <button class="btn btn-danger btn-sm timer-stop-btn" onclick="timerService.stopSession()">
+                    Stop
+                </button>
+            `;
+        } else if (isRunning) {
+            // Show Pause and Stop buttons
+            controlsContainer.innerHTML = `
+                <button class="btn btn-warning btn-sm timer-pause-btn">
+                    Pause
+                </button>
+                <button class="btn btn-danger btn-lg timer-control-btn">
+                    Stop Session
+                </button>
+            `;
         } else {
-            btn.textContent = 'Start Session';
-            btn.className = 'btn btn-success btn-lg timer-control-btn';
+            // Show Start button
+            controlsContainer.innerHTML = `
+                <button class="btn btn-success btn-lg timer-control-btn">
+                    Start Session
+                </button>
+            `;
         }
     }
 
     updateTimerDisplay(elapsed, total) {
         const remaining = Math.max(0, total - elapsed);
         const timeElement = this.container.querySelector('.timer-time');
+        const timerInfo = this.container.querySelector('.timer-info');
         const progressCircle = this.container.querySelector('.timer-progress');
+        const isPaused = state.get('timer.isPaused');
 
         if (timeElement) {
-            timeElement.textContent = formatTime(remaining);
+            const timeText = formatTime(remaining);
+            timeElement.textContent = isPaused ? `${timeText} [PAUSED]` : timeText;
+        }
+
+        if (timerInfo && isPaused) {
+            timerInfo.textContent = 'Paused';
+        } else if (timerInfo) {
+            timerInfo.textContent = 'Focus time';
         }
 
         if (progressCircle) {
@@ -141,7 +188,23 @@ class PomodoroTimer {
         this.updateTimerDisplay(0, duration);
     }
 
+    playCompletionSound() {
+        try {
+            const audio = new Audio('/assets/timer-complete.mp3');
+            audio.volume = 0.5; // 50% volume
+            audio.play().catch(err => {
+                // Silently fail if audio unavailable or browser blocks autoplay
+                console.debug('Audio play failed (expected on some browsers or missing file)', err);
+            });
+        } catch (err) {
+            console.debug('Audio not available', err);
+        }
+    }
+
     showCompletionMessage(coinsEarned) {
+        // Play completion sound
+        this.playCompletionSound();
+
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'toast success';

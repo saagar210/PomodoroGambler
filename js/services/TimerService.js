@@ -88,10 +88,12 @@ class TimerService {
         // Update state
         state.set('timer', {
             isRunning: true,
+            isPaused: false,
             startTime: this.startTime,
             duration: durationMinutes,
             multiplier: this.multiplier,
-            elapsedSeconds: 0
+            elapsedSeconds: 0,
+            pausedAtSeconds: 0
         });
 
         // Start interval
@@ -110,10 +112,12 @@ class TimerService {
 
         state.set('timer', {
             isRunning: true,
+            isPaused: false,
             startTime: startTime,
             duration: duration,
             multiplier: this.multiplier,
-            elapsedSeconds: elapsedSeconds
+            elapsedSeconds: elapsedSeconds,
+            pausedAtSeconds: 0
         });
 
         this.intervalId = setInterval(() => {
@@ -169,10 +173,12 @@ class TimerService {
         // Reset state
         state.set('timer', {
             isRunning: false,
+            isPaused: false,
             startTime: null,
             duration: 15,
             multiplier: 1,
-            elapsedSeconds: 0
+            elapsedSeconds: 0,
+            pausedAtSeconds: 0
         });
 
         eventBus.emit('session:completed', { coinsEarned, duration, multiplier: config.multiplier });
@@ -206,13 +212,86 @@ class TimerService {
         // Reset state
         state.set('timer', {
             isRunning: false,
+            isPaused: false,
             startTime: null,
             duration: 15,
             multiplier: 1,
-            elapsedSeconds: 0
+            elapsedSeconds: 0,
+            pausedAtSeconds: 0
         });
 
         eventBus.emit('session:stopped');
+    }
+
+    async pauseSession() {
+        if (!state.get('timer.isRunning') || state.get('timer.isPaused')) {
+            console.warn('Cannot pause: timer not running or already paused');
+            return;
+        }
+
+        // Stop the interval
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+
+        const pausedAtSeconds = state.get('timer.elapsedSeconds');
+
+        // Update state
+        state.set('timer', {
+            ...state.get('timer'),
+            isRunning: false,
+            isPaused: true,
+            pausedAtSeconds: pausedAtSeconds
+        });
+
+        // Persist pause state
+        await storage.saveTimerState({
+            startTime: this.startTime,
+            duration: this.duration,
+            pausedAtSeconds: pausedAtSeconds,
+            isPaused: true,
+            expectedEndTime: this.startTime + (this.duration * 60 * 1000)
+        });
+
+        eventBus.emit('timer:paused', { pausedAtSeconds });
+    }
+
+    async resumeFromPause() {
+        if (!state.get('timer.isPaused')) {
+            console.warn('Cannot resume: timer not paused');
+            return;
+        }
+
+        const pausedSeconds = state.get('timer.pausedAtSeconds');
+        const now = Date.now();
+
+        // Adjust startTime so elapsed time matches pausedSeconds
+        this.startTime = now - (pausedSeconds * 1000);
+
+        // Update state
+        state.set('timer', {
+            ...state.get('timer'),
+            isRunning: true,
+            isPaused: false,
+            startTime: this.startTime
+        });
+
+        // Persist state
+        const expectedEndTime = this.startTime + (this.duration * 60 * 1000);
+        await storage.saveTimerState({
+            startTime: this.startTime,
+            duration: this.duration,
+            expectedEndTime: expectedEndTime,
+            isPaused: false
+        });
+
+        // Restart interval
+        this.intervalId = setInterval(() => {
+            this.tick();
+        }, 1000);
+
+        eventBus.emit('timer:resumed', { pausedSeconds });
     }
 }
 

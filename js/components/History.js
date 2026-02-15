@@ -1,7 +1,9 @@
 // History component
 
 import { historyService } from '../services/HistoryService.js';
+import { dataExportService } from '../services/DataExportService.js';
 import { eventBus } from '../core/eventbus.js';
+import { state } from '../core/state.js';
 import { formatDateTime, formatCoins, formatDuration, formatPayout } from '../utils/formatters.js';
 
 class History {
@@ -14,6 +16,44 @@ class History {
     }
 
     attachListeners() {
+        // Export buttons
+        this.container.addEventListener('click', async (e) => {
+            if (e.target.id === 'export-json-btn') {
+                const content = await dataExportService.exportAsJSON();
+                const filename = `pomodorogambler-export-${new Date().toISOString().split('T')[0]}.json`;
+                dataExportService.downloadFile(content, filename, 'application/json');
+                this.showToast(`Exported ${filename}`, 'success');
+            }
+
+            if (e.target.id === 'export-sessions-csv-btn') {
+                const content = await dataExportService.exportSessionsAsCSV();
+                const filename = `pomodorogambler-sessions-${new Date().toISOString().split('T')[0]}.csv`;
+                dataExportService.downloadFile(content, filename, 'text/csv');
+                this.showToast('Sessions exported to CSV', 'success');
+            }
+
+            if (e.target.id === 'export-bets-csv-btn') {
+                const content = await dataExportService.exportBetsAsCSV();
+                const filename = `pomodorogambler-bets-${new Date().toISOString().split('T')[0]}.csv`;
+                dataExportService.downloadFile(content, filename, 'text/csv');
+                this.showToast('Bets exported to CSV', 'success');
+            }
+
+            if (e.target.id === 'delete-all-btn') {
+                const deleted = await dataExportService.deleteAllData();
+                if (deleted) {
+                    // Reset UI state
+                    state.set('currentBalance', 100);
+                    this.showToast('All data deleted. Balance reset to 100 coins.', 'success');
+                    // Re-render
+                    this.renderStats();
+                    this.renderActiveTab();
+                    // Reload balance display
+                    eventBus.emit('balance:updated', { newBalance: 100 });
+                }
+            }
+        });
+
         // Tab switching
         this.container.addEventListener('click', (e) => {
             const tabBtn = e.target.closest('.history-tab-btn');
@@ -292,6 +332,14 @@ class History {
     render() {
         this.container.innerHTML = `
             <div class="stats-grid"></div>
+
+            <!-- Export toolbar -->
+            <div class="history-toolbar">
+                <button id="export-json-btn" class="btn-secondary btn-sm">Export JSON</button>
+                <button id="export-sessions-csv-btn" class="btn-secondary btn-sm">Export Sessions</button>
+                <button id="export-bets-csv-btn" class="btn-secondary btn-sm">Export Bets</button>
+                <button id="delete-all-btn" class="btn-danger btn-sm">Delete All Data</button>
+            </div>
 
             <div class="history-tabs">
                 <button class="history-tab-btn active" data-tab="sessions">Work Sessions</button>
