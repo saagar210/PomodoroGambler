@@ -30,10 +30,19 @@ A single-user web application that combines Pomodoro time management with virtua
    # Then open http://localhost:8000
    ```
 
-3. Start with 100 coins
-4. Complete work sessions to earn more coins
-5. Place bets on events in the Dashboard
-6. Resolve event outcomes from History to settle winnings
+3. Optional helper scripts (same server behavior, easier workflow):
+   ```bash
+   # Normal dev mode (same as python3 -m http.server 8000)
+   ./scripts/dev-normal.sh
+
+   # Lean dev mode: uses ephemeral temp/cache paths and auto-cleanup on exit
+   ./scripts/dev-lean.sh
+   ```
+
+4. Start with 100 coins
+5. Complete work sessions to earn more coins
+6. Place bets on events in the Dashboard
+7. Resolve event outcomes from History to settle winnings
 
 ## Tech Stack
 
@@ -69,6 +78,40 @@ Works in modern browsers with:
 ## Privacy
 
 All data stays local in your browser. No server required, no data collection.
+
+## Dev Modes and Cleanup
+
+### Normal Dev
+
+```bash
+./scripts/dev-normal.sh
+```
+
+- Fastest startup.
+- Leaves normal local runtime artifacts untouched.
+
+### Lean Dev
+
+```bash
+./scripts/dev-lean.sh
+```
+
+- Uses temporary runtime/cache locations (`TMPDIR`, `XDG_CACHE_HOME`) for the server process.
+- Automatically runs a targeted cleanup when the server exits.
+- Better for low disk usage, with a small startup overhead.
+
+### Cleanup Commands
+
+```bash
+# Remove heavy build/runtime artifacts only
+./scripts/clean-heavy.sh
+
+# Remove all reproducible local caches (includes heavy cleanup)
+./scripts/clean-all-local.sh
+```
+
+`clean-heavy` avoids dependency directories so day-to-day restarts stay reasonably fast.  
+`clean-all-local` is a deeper reset that may increase next startup time.
 
 ## License
 
