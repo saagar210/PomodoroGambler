@@ -5,7 +5,8 @@ import { eventCreationService } from '../services/EventCreationService.js';
 import { eventBus } from '../core/eventbus.js';
 import { state } from '../core/state.js';
 import { EventCard } from './EventCard.js';
-import { CATEGORIES } from '../utils/constants.js';
+import { CATEGORIES, MAX_BET_AMOUNT, MIN_BET_AMOUNT } from '../utils/constants.js';
+import { validateBetAmount } from '../utils/validators.js';
 
 class Dashboard {
     constructor(containerId) {
@@ -37,6 +38,12 @@ class Dashboard {
             this.renderEvents();
         });
 
+        eventBus.on('state:changed', ({ key }) => {
+            if (key === 'betAmount') {
+                this.renderEvents();
+            }
+        });
+
         // Create event button
         this.container.addEventListener('click', async (e) => {
             if (e.target.id === 'create-event-btn') {
@@ -53,6 +60,21 @@ class Dashboard {
             this.currentCategory = category;
             this.updateFilters();
             this.renderEvents();
+        });
+
+        this.container.addEventListener('change', (e) => {
+            if (e.target.id !== 'bet-amount-input') return;
+
+            const value = Number.parseInt(e.target.value, 10);
+            const validation = validateBetAmount(value, MIN_BET_AMOUNT, MAX_BET_AMOUNT);
+            if (!validation.valid) {
+                this.showToast(validation.error, 'error');
+                e.target.value = state.get('betAmount');
+                return;
+            }
+
+            state.set('betAmount', value);
+            this.showToast(`Bet amount set to ${value} coins`, 'success');
         });
     }
 
@@ -128,8 +150,9 @@ class Dashboard {
     }
 
     render() {
+        const betAmount = state.get('betAmount');
         this.container.innerHTML = `
-            <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="dashboard-header">
                 <div class="filter-bar">
                     ${CATEGORIES.map(cat => `
                         <button class="filter-btn ${cat === this.currentCategory ? 'active' : ''}" data-category="${cat}">
@@ -137,7 +160,20 @@ class Dashboard {
                         </button>
                     `).join('')}
                 </div>
-                <button id="create-event-btn" class="btn btn-primary btn-sm">+ Create Event</button>
+                <div class="dashboard-actions">
+                    <label class="bet-amount-control">
+                        Bet Amount
+                        <input
+                            id="bet-amount-input"
+                            type="number"
+                            min="${MIN_BET_AMOUNT}"
+                            max="${MAX_BET_AMOUNT}"
+                            step="10"
+                            value="${betAmount}"
+                        />
+                    </label>
+                    <button id="create-event-btn" class="btn btn-primary btn-sm">+ Create Event</button>
+                </div>
             </div>
             <div class="events-grid grid grid-auto"></div>
         `;

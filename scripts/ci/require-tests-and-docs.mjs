@@ -14,7 +14,15 @@ const changed = execSync(`git diff --name-only ${baseRef}...HEAD`, { encoding: '
   .map((line) => line.trim())
   .filter(Boolean);
 
-const isProdCode = (file) => /^(src|app|server|api|lib)\//.test(file) && !/\.(test|spec)\.[cm]?[jt]sx?$/.test(file);
+const isProdCode = (file) =>
+  (
+    file.startsWith('js/') ||
+    file.startsWith('styles/') ||
+    file.startsWith('lib/') ||
+    file === 'index.html' ||
+    file === 'manifest.json' ||
+    file === 'service-worker.js'
+  ) && !/\.(test|spec)\.[cm]?[jt]sx?$/.test(file);
 const isTest = (file) => /^tests\//.test(file) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file);
 const isDoc = (file) => /^docs\//.test(file) || /^openapi\//.test(file) || file === 'README.md';
 

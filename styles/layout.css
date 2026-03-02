@@ -30,6 +30,12 @@ body {
     justify-content: space-between;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
 .app-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
@@ -151,5 +157,9 @@ nav {
 
     .app-title {
         font-size: var(--font-size-xl);
+    }
+
+    .header-actions {
+        gap: var(--spacing-sm);
     }
 }

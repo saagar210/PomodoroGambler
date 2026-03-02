@@ -2,6 +2,7 @@
 
 import { historyService } from '../services/HistoryService.js';
 import { dataExportService } from '../services/DataExportService.js';
+import { analyticsService } from '../services/AnalyticsService.js';
 import { eventBus } from '../core/eventbus.js';
 import { state } from '../core/state.js';
 import { formatDateTime, formatCoins, formatDuration, formatPayout } from '../utils/formatters.js';
@@ -47,6 +48,7 @@ class History {
                     this.showToast('All data deleted. Balance reset to 100 coins.', 'success');
                     // Re-render
                     this.renderStats();
+                    this.renderAnalytics();
                     this.renderActiveTab();
                     // Reload balance display
                     eventBus.emit('balance:updated', { newBalance: 100 });
@@ -88,6 +90,7 @@ class History {
             if (resolved) {
                 this.renderActiveTab();
                 this.renderStats();
+                this.renderAnalytics();
                 this.showToast(`Event resolved: ${winningSide.toUpperCase()} won`, 'success');
             } else {
                 resolveBtn.disabled = false;
@@ -98,16 +101,19 @@ class History {
         eventBus.on('session:completed', () => {
             this.renderActiveTab();
             this.renderStats();
+            this.renderAnalytics();
         });
 
         eventBus.on('bet:placed', () => {
             this.renderActiveTab();
             this.renderStats();
+            this.renderAnalytics();
         });
 
         eventBus.on('event:resolved', ({ eventTitle, totalPayout }) => {
             this.renderActiveTab();
             this.renderStats();
+            this.renderAnalytics();
             this.showToast(`${eventTitle} settled. Payout: ${formatCoins(totalPayout)}`, 'success');
         });
 
@@ -165,6 +171,40 @@ class History {
             <div class="stat-card">
                 <div class="stat-value ${netProfit >= 0 ? 'positive' : 'negative'}">${netProfit >= 0 ? '+' : ''}${formatCoins(netProfit)}</div>
                 <div class="stat-label">Net Profit/Loss</div>
+            </div>
+        `;
+    }
+
+    renderAnalytics() {
+        const analyticsContainer = this.container.querySelector('.analytics-grid');
+        if (!analyticsContainer) return;
+
+        const analytics = analyticsService.getSummary();
+        analyticsContainer.innerHTML = `
+            <div class="analytics-card">
+                <div class="analytics-label">Session Completion Rate</div>
+                <div class="analytics-value">${analytics.completionRate.toFixed(1)}%</div>
+                <div class="analytics-subtext">${analytics.completedSessions}/${analytics.totalSessions} completed</div>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-label">Bet Win Rate</div>
+                <div class="analytics-value">${analytics.winRate.toFixed(1)}%</div>
+                <div class="analytics-subtext">${analytics.wonBets}/${analytics.resolvedBets} resolved bets won</div>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-label">Average Session</div>
+                <div class="analytics-value">${analytics.avgCompletedDuration.toFixed(1)} min</div>
+                <div class="analytics-subtext">Completed sessions only</div>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-label">Average Bet</div>
+                <div class="analytics-value">${formatCoins(Math.round(analytics.avgBetAmount))}</div>
+                <div class="analytics-subtext">${analytics.pendingBets} bets pending settlement</div>
+            </div>
+            <div class="analytics-card analytics-card-wide">
+                <div class="analytics-label">Bet ROI</div>
+                <div class="analytics-value ${analytics.roi >= 0 ? 'positive' : 'negative'}">${analytics.roi >= 0 ? '+' : ''}${analytics.roi.toFixed(1)}%</div>
+                <div class="analytics-subtext">Return on spent coins from settled winnings</div>
             </div>
         `;
     }
@@ -332,6 +372,7 @@ class History {
     render() {
         this.container.innerHTML = `
             <div class="stats-grid"></div>
+            <div class="analytics-grid"></div>
 
             <!-- Export toolbar -->
             <div class="history-toolbar">
@@ -351,6 +392,7 @@ class History {
         `;
 
         this.renderStats();
+        this.renderAnalytics();
         this.renderActiveTab();
     }
 }

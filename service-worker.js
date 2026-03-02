@@ -1,142 +1,106 @@
-// Service Worker: Cache-first strategy for offline support
-// Caches: app shell (HTML/CSS/JS), library files (WASM)
-// Network: Dynamic assets (events, bets) always fetch fresh
+// Service Worker: cache-first app shell with scope-aware paths.
 
-const CACHE_VERSION = 'v1.0';
+const CACHE_VERSION = 'v1.1';
 const CACHE_NAME = `pomodorogambler-${CACHE_VERSION}`;
 
-// Files to cache on install
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/js/main.js',
-  '/js/core/database.js',
-  '/js/core/storage.js',
-  '/js/core/state.js',
-  '/js/core/eventbus.js',
-  '/js/services/TimerService.js',
-  '/js/services/BettingService.js',
-  '/js/services/BalanceService.js',
-  '/js/services/HistoryService.js',
-  '/js/components/PomodoroTimer.js',
-  '/js/components/Dashboard.js',
-  '/js/components/EventCard.js',
-  '/js/components/History.js',
-  '/js/components/TabNavigator.js',
-  '/js/components/BalanceDisplay.js',
-  '/js/models/User.js',
-  '/js/models/WorkSession.js',
-  '/js/models/BettingEvent.js',
-  '/js/models/Transaction.js',
-  '/js/models/CoinBalance.js',
-  '/js/utils/constants.js',
-  '/js/utils/validators.js',
-  '/js/utils/formatters.js',
-  '/js/utils/keyboard.js',
-  '/js/data/initial-events.json',
-  '/styles/reset.css',
-  '/styles/variables.css',
-  '/styles/layout.css',
-  '/styles/components.css',
-  '/styles/polymarket-theme.css',
-  '/lib/sql-wasm.js',
-  '/lib/sql-wasm.wasm'
+  '.',
+  'index.html',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png',
+  'js/main.js',
+  'js/core/database.js',
+  'js/core/storage.js',
+  'js/core/state.js',
+  'js/core/eventbus.js',
+  'js/services/TimerService.js',
+  'js/services/BettingService.js',
+  'js/services/HistoryService.js',
+  'js/services/AnalyticsService.js',
+  'js/components/PomodoroTimer.js',
+  'js/components/Dashboard.js',
+  'js/components/EventCard.js',
+  'js/components/History.js',
+  'js/components/TabNavigator.js',
+  'js/components/BalanceDisplay.js',
+  'js/components/ThemeSwitcher.js',
+  'js/models/User.js',
+  'js/models/WorkSession.js',
+  'js/models/BettingEvent.js',
+  'js/models/Transaction.js',
+  'js/models/CoinBalance.js',
+  'js/utils/constants.js',
+  'js/utils/validators.js',
+  'js/utils/formatters.js',
+  'js/utils/keyboard.js',
+  'js/data/initial-events.json',
+  'styles/reset.css',
+  'styles/variables.css',
+  'styles/layout.css',
+  'styles/components.css',
+  'styles/polymarket-theme.css',
+  'lib/sql-wasm.js',
+  'lib/sql-wasm.wasm'
 ];
 
-// Install: Cache all static assets
-self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing...');
+const scopeBase = self.registration?.scope || self.location.origin + '/';
+const toScopedUrl = (path) => new URL(path, scopeBase).toString();
+const STATIC_URLS = STATIC_ASSETS.map(toScopedUrl);
 
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[Service Worker] Some assets failed to cache:', err);
-        // Don't fail install if some assets are missing
-        return Promise.resolve();
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_URLS))
   );
 
-  // Activate immediately
   self.skipWaiting();
 });
 
-// Activate: Clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
-
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => {
-            console.log('[Service Worker] Deleting old cache:', name);
-            return caches.delete(name);
-          })
-      );
-    })
+    caches.keys().then((cacheNames) => Promise.all(
+      cacheNames
+        .filter((name) => name !== CACHE_NAME)
+        .map((name) => caches.delete(name))
+    ))
   );
 
-  // Take control immediately
   self.clients.claim();
 });
 
-// Fetch: Cache-first strategy
-// - If in cache, return from cache
-// - If not, fetch from network, cache it, return it
-// - If offline, return offline response
-
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  const url = new URL(request.url);
+  const requestUrl = new URL(request.url);
 
-  // Don't handle non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Don't cache external URLs
-  if (url.origin !== location.origin) {
-    return;
-  }
+  if (request.method !== 'GET') return;
+  if (requestUrl.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(request).then((response) => {
-      if (response) {
-        // Return from cache
-        return response;
-      }
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
 
-      // Try to fetch from network
       return fetch(request)
         .then((response) => {
-          // Don't cache non-200 responses
           if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
 
-          // Cache the response for future use
-          const responseToCache = response.clone();
+          const cloned = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
+            cache.put(request, cloned);
           });
 
           return response;
         })
-        .catch((err) => {
-          // Network failed, offline
-          console.warn('[Service Worker] Offline:', request.url);
+        .catch(() => {
+          if (request.mode === 'navigate') {
+            return caches.match(toScopedUrl('index.html'));
+          }
 
-          // Return a generic offline response
           return new Response('Offline - please check your connection', {
             status: 503,
             statusText: 'Service Unavailable',
-            headers: new Headers({
-              'Content-Type': 'text/plain'
-            })
+            headers: new Headers({ 'Content-Type': 'text/plain' })
           });
         });
     })

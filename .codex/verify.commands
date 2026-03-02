@@ -1,5 +1,7 @@
-# Replace these commands with your repo's canonical checks.
+# Canonical repo checks for this static app (no Node package toolchain required).
 # Keep order strict: fast static checks first, then behavioral, then docs drift.
-npm run lint
-npm run test
-npm run docs:check
+node scripts/ci/check-static.mjs
+node --test tests/regression/*.test.mjs
+node scripts/ci/smoke-http.mjs
+node scripts/ci/require-tests-and-docs.mjs
+node scripts/ci/check-docs.mjs

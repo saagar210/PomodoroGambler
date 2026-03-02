@@ -85,6 +85,7 @@ class Database {
                 category TEXT,
                 odds_yes REAL NOT NULL,
                 odds_no REAL NOT NULL,
+                is_custom INTEGER DEFAULT 0,
                 outcome TEXT,
                 resolution_date TEXT,
                 is_active INTEGER DEFAULT 1,
@@ -265,11 +266,11 @@ class Database {
     }
 
     // Betting transaction methods
-    async createBettingTransaction(eventId, betSide, oddsAtBet, potentialPayout) {
+    async createBettingTransaction(eventId, betAmount, betSide, oddsAtBet, potentialPayout) {
         this.run(`
-            INSERT INTO betting_transactions (event_id, bet_side, odds_at_bet, potential_payout)
-            VALUES (?, ?, ?, ?)
-        `, [eventId, betSide, oddsAtBet, potentialPayout]);
+            INSERT INTO betting_transactions (event_id, bet_amount, bet_side, odds_at_bet, potential_payout)
+            VALUES (?, ?, ?, ?, ?)
+        `, [eventId, betAmount, betSide, oddsAtBet, potentialPayout]);
         await this.save();
     }
 

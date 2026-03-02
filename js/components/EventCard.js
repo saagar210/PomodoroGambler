@@ -4,24 +4,28 @@ import { bettingService } from '../services/BettingService.js';
 import { state } from '../core/state.js';
 import { formatPercentage } from '../utils/formatters.js';
 import { validateBalance } from '../utils/validators.js';
-import { BET_AMOUNT } from '../utils/constants.js';
 
 export class EventCard {
     constructor(event) {
         this.event = event;
     }
 
-    canPlaceBet() {
-        const balance = state.get('currentBalance');
-        return validateBalance(balance, BET_AMOUNT);
+    getBetAmount() {
+        return state.get('betAmount');
     }
 
-    handleBet(betSide) {
-        bettingService.placeBet(this.event.id, betSide);
+    canPlaceBet(betAmount) {
+        const balance = state.get('currentBalance');
+        return validateBalance(balance, betAmount);
+    }
+
+    handleBet(betSide, betAmount) {
+        bettingService.placeBet(this.event.id, betSide, betAmount);
     }
 
     render() {
-        const canBet = this.canPlaceBet();
+        const betAmount = this.getBetAmount();
+        const canBet = this.canPlaceBet(betAmount);
         const disabledAttr = canBet ? '' : 'disabled';
         const categoryClass = this.event.category.toLowerCase();
 
@@ -45,10 +49,10 @@ export class EventCard {
             </div>
             <div class="event-actions">
                 <button class="bet-btn yes" data-side="yes" ${disabledAttr}>
-                    Bet YES (${BET_AMOUNT} coins)
+                    Bet YES (${betAmount} coins)
                 </button>
                 <button class="bet-btn no" data-side="no" ${disabledAttr}>
-                    Bet NO (${BET_AMOUNT} coins)
+                    Bet NO (${betAmount} coins)
                 </button>
             </div>
         `;
@@ -57,7 +61,7 @@ export class EventCard {
         card.querySelectorAll('.bet-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const side = btn.dataset.side;
-                this.handleBet(side);
+                this.handleBet(side, betAmount);
             });
         });
 

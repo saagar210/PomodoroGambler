@@ -8,6 +8,7 @@ export class BettingEvent {
         this.category = data.category;
         this.oddsYes = data.odds_yes;
         this.oddsNo = data.odds_no;
+        this.isCustom = Number(data.is_custom) === 1;
         this.outcome = data.outcome;
         this.resolutionDate = data.resolution_date;
         this.isActive = data.is_active === 1;

@@ -16,7 +16,7 @@ class DataExportService {
             'SELECT * FROM work_sessions ORDER BY created_at DESC'
         );
         const bets = await this.database.query(
-            `SELECT bt.*, be.title as eventTitle, be.category
+            `SELECT bt.*, be.title as event_title, be.category as event_category
              FROM betting_transactions bt
              LEFT JOIN betting_events be ON bt.event_id = be.id
              ORDER BY bt.created_at DESC`
@@ -52,10 +52,10 @@ class DataExportService {
         const headers = ['ID', 'Date', 'Duration (min)', 'Multiplier', 'Coins Earned', 'Status'];
         const rows = sessions.map(s => [
             s.id,
-            s.createdAt,
-            s.durationMinutes,
+            s.created_at,
+            s.duration_minutes,
             s.multiplier,
-            s.coinsEarned,
+            s.coins_earned,
             s.status
         ]);
 
@@ -73,7 +73,7 @@ class DataExportService {
      */
     async exportBetsAsCSV() {
         const bets = await this.database.query(
-            `SELECT bt.*, be.title as eventTitle, be.category
+            `SELECT bt.*, be.title as event_title, be.category as event_category
              FROM betting_transactions bt
              LEFT JOIN betting_events be ON bt.event_id = be.id
              ORDER BY bt.created_at DESC`
@@ -86,14 +86,14 @@ class DataExportService {
         const headers = ['ID', 'Date', 'Event', 'Category', 'Bet Side', 'Amount', 'Odds', 'Potential Payout', 'Actual Payout', 'Status'];
         const rows = bets.map(b => [
             b.id,
-            b.createdAt,
-            b.eventTitle || 'Unknown',
-            b.category || 'Unknown',
-            b.betSide,
-            b.betAmount,
-            b.oddsAtBet,
-            b.potentialPayout,
-            b.actualPayout,
+            b.created_at,
+            b.event_title || 'Unknown',
+            b.event_category || 'Unknown',
+            b.bet_side,
+            b.bet_amount,
+            b.odds_at_bet,
+            b.potential_payout,
+            b.winnings,
             b.outcome
         ]);
 
@@ -149,15 +149,14 @@ class DataExportService {
         if (!confirmed) return false;
 
         // Delete all sessions
-        await this.database.run('DELETE FROM work_sessions');
+        this.database.run('DELETE FROM work_sessions');
 
         // Delete all bets
-        await this.database.run('DELETE FROM betting_transactions');
+        this.database.run('DELETE FROM betting_transactions');
 
         // Reset balance to 100
-        await this.database.run(
-            'UPDATE coin_balance SET current_balance = 100, total_earned = 0, total_spent = 0, total_winnings = 0 WHERE id = 1'
-        );
+        this.database.run('UPDATE coin_balance SET balance = 100, last_updated = datetime(\'now\') WHERE id = 1');
+        await this.database.save();
 
         return true;
     }

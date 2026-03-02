@@ -9,11 +9,15 @@ A single-user web application that combines Pomodoro time management with virtua
   - 30 min = 40 coins (2x multiplier)
   - 60 min = 100 coins (5x multiplier)
 
-- **Virtual Betting**: Place 40-coin bets on various events
+- **Virtual Betting**: Place coin bets on various events
   - Sports, Tech, Gaming, and Politics categories
   - Polymarket-style interface with odds display
-  - Fixed 40-coin bet amounts
+  - Configurable bet amounts (10-1000 coins)
   - Manual event resolution in History (YES/NO) with automatic payout settlement
+
+- **Analytics Snapshot**: See completion rate, bet win rate, average session length, average bet size, and ROI in History
+
+- **Theme Switching**: Dark, light, or system theme with local preference persistence
 
 - **Interruption Detection**: Sessions interrupted by closing the browser don't award coins
 
@@ -37,6 +41,9 @@ A single-user web application that combines Pomodoro time management with virtua
 
    # Lean dev mode: uses ephemeral temp/cache paths and auto-cleanup on exit
    ./scripts/dev-lean.sh
+
+   # Optional: snapshot disk-heavy folders before/after runs
+   ./scripts/measure-disk.sh
    ```
 
 4. Start with 100 coins
@@ -112,6 +119,29 @@ All data stays local in your browser. No server required, no data collection.
 
 `clean-heavy` avoids dependency directories so day-to-day restarts stay reasonably fast.  
 `clean-all-local` is a deeper reset that may increase next startup time.
+
+### Daily Low-Disk Command
+
+```bash
+./scripts/dev-lean.sh
+```
+
+Use this as your default daily command when disk usage is your top priority.
+
+## Verification
+
+Run the canonical repository checks:
+
+```bash
+bash .codex/scripts/run_verify_commands.sh
+```
+
+## GitHub Pages Deployment
+
+The repository includes `.github/workflows/deploy-pages.yml` using the official Pages build/upload/deploy flow.
+
+- Build artifact: `node scripts/ci/build-pages.mjs`
+- Post-deploy smoke: `node scripts/ci/smoke-pages.mjs` (run in CI with deployed URL)
 
 ## License
 

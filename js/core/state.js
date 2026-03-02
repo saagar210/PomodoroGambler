@@ -1,12 +1,13 @@
 // Application state management
 
 import { eventBus } from './eventbus.js';
-import { TABS } from '../utils/constants.js';
+import { BET_AMOUNT, TABS } from '../utils/constants.js';
 
 class State {
     constructor() {
         this.data = {
             currentBalance: 0,
+            betAmount: BET_AMOUNT,
             activeTab: TABS.DASHBOARD,
             timer: {
                 isRunning: false,

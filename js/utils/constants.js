@@ -7,6 +7,8 @@ export const DURATIONS = {
 };
 
 export const BET_AMOUNT = 40;
+export const MIN_BET_AMOUNT = 10;
+export const MAX_BET_AMOUNT = 1000;
 
 export const STARTING_BALANCE = 100;
 
@@ -38,7 +40,8 @@ export const TABS = {
 
 export const STORAGE_KEYS = {
     DB: 'auraflow_database',
-    TIMER_STATE: 'auraflow_timer_state'
+    TIMER_STATE: 'auraflow_timer_state',
+    THEME_PREFERENCE: 'auraflow_theme_preference'
 };
 
 export const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 minutes

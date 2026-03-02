@@ -2,7 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Contract Artifact",
-    "version": "1.0.0"
+    "version": "1.1.0",
+    "description": "Repository contract metadata for quality and release verification."
+  },
+  "x-release": {
+    "runModes": ["normal", "lean"],
+    "deployTarget": "github-pages"
   },
   "paths": {},
   "components": {}

@@ -48,6 +48,22 @@
     border-bottom-color: var(--color-primary);
 }
 
+.theme-control {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.theme-control select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    padding: 6px 10px;
+}
+
 /* Event Card */
 .event-card {
     background-color: var(--color-bg-secondary);
@@ -161,6 +177,37 @@
     margin-bottom: var(--spacing-xl);
     overflow-x: auto;
     padding-bottom: var(--spacing-sm);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.bet-amount-control {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.bet-amount-control input {
+    width: 92px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    padding: 6px 10px;
 }
 
 .filter-btn {
@@ -278,6 +325,57 @@
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-lg);
     border-bottom: 1px solid var(--color-border);
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.analytics-card {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.analytics-card-wide {
+    grid-column: span 2;
+}
+
+.analytics-label {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+}
+
+.analytics-value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 2px;
+}
+
+.analytics-subtext {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+}
+
+@media (max-width: 900px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-actions {
+        justify-content: space-between;
+    }
+
+    .analytics-card-wide {
+        grid-column: span 1;
+    }
 }
 
 .history-tab-btn {

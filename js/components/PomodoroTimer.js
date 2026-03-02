@@ -10,6 +10,7 @@ class PomodoroTimer {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.selectedDuration = 15;
+        state.set('timer.duration', this.selectedDuration);
         this.render();
         this.attachListeners();
         this.initializeTimerState();
@@ -34,6 +35,7 @@ class PomodoroTimer {
             if (durationBtn && !state.get('timer.isRunning')) {
                 const duration = parseInt(durationBtn.dataset.duration);
                 this.selectedDuration = duration;
+                state.set('timer.duration', duration);
                 this.updateDurationButtons();
             }
         });
@@ -57,6 +59,11 @@ class PomodoroTimer {
             const pauseBtn = e.target.closest('.timer-pause-btn');
             if (pauseBtn) {
                 timerService.pauseSession();
+            }
+
+            const stopBtn = e.target.closest('.timer-stop-btn');
+            if (stopBtn) {
+                timerService.stopSession();
             }
         });
 
@@ -133,7 +140,7 @@ class PomodoroTimer {
                 <button class="btn btn-success btn-lg timer-control-btn">
                     Resume Session
                 </button>
-                <button class="btn btn-danger btn-sm timer-stop-btn" onclick="timerService.stopSession()">
+                <button class="btn btn-danger btn-sm timer-stop-btn">
                     Stop
                 </button>
             `;
@@ -190,12 +197,21 @@ class PomodoroTimer {
 
     playCompletionSound() {
         try {
-            const audio = new Audio('/assets/timer-complete.mp3');
-            audio.volume = 0.5; // 50% volume
-            audio.play().catch(err => {
-                // Silently fail if audio unavailable or browser blocks autoplay
-                console.debug('Audio play failed (expected on some browsers or missing file)', err);
-            });
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + 0.18);
+            oscillator.onended = () => ctx.close();
         } catch (err) {
             console.debug('Audio not available', err);
         }

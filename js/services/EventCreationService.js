@@ -76,7 +76,7 @@ class EventCreationService {
             [eventId]
         );
 
-        if (!event || !event.is_custom) {
+        if (!event || Number(event.is_custom) !== 1) {
             throw new Error('Can only delete custom events');
         }
 

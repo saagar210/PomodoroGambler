@@ -4,21 +4,32 @@ import { database } from '../core/database.js';
 import { balanceService } from './BalanceService.js';
 import { eventBus } from '../core/eventbus.js';
 import { state } from '../core/state.js';
-import { validateBalance, validateBetSide } from '../utils/validators.js';
+import { validateBalance, validateBetAmount, validateBetSide } from '../utils/validators.js';
 import { BET_AMOUNT } from '../utils/constants.js';
 import { BettingEvent } from '../models/BettingEvent.js';
 
 class BettingService {
-    async placeBet(eventId, betSide) {
+    async placeBet(eventId, betSide, rawBetAmount = null) {
         // Validate bet side
         if (!validateBetSide(betSide)) {
             eventBus.emit('bet:error', { message: 'Invalid bet side' });
             return false;
         }
 
+        const parsedBetAmount = Number.parseInt(
+            rawBetAmount ?? state.get('betAmount') ?? BET_AMOUNT,
+            10
+        );
+        const betValidation = validateBetAmount(parsedBetAmount);
+        if (!betValidation.valid) {
+            eventBus.emit('bet:error', { message: betValidation.error });
+            return false;
+        }
+        const betAmount = parsedBetAmount;
+
         // Validate balance
         const currentBalance = state.get('currentBalance');
-        if (!validateBalance(currentBalance, BET_AMOUNT)) {
+        if (!validateBalance(currentBalance, betAmount)) {
             eventBus.emit('bet:error', { message: 'Insufficient coins. Complete more work sessions!' });
             return false;
         }
@@ -32,20 +43,26 @@ class BettingService {
 
         const event = BettingEvent.fromDatabase(eventData);
         const oddsAtBet = betSide === 'yes' ? event.oddsYes : event.oddsNo;
-        const potentialPayout = BET_AMOUNT / oddsAtBet;
+        const potentialPayout = betAmount / oddsAtBet;
 
         // Execute transaction atomically
         try {
             // Create betting transaction
-            await database.createBettingTransaction(eventId, betSide, oddsAtBet, potentialPayout);
+            await database.createBettingTransaction(
+                eventId,
+                betAmount,
+                betSide,
+                oddsAtBet,
+                potentialPayout
+            );
 
             // Deduct coins
-            await balanceService.deductCoins(BET_AMOUNT);
+            await balanceService.deductCoins(betAmount);
 
             eventBus.emit('bet:placed', {
                 eventTitle: event.title,
                 betSide,
-                betAmount: BET_AMOUNT,
+                betAmount,
                 potentialPayout
             });
 

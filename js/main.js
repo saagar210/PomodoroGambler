@@ -12,6 +12,7 @@ import { initTabNavigator } from './components/TabNavigator.js';
 import { initDashboard } from './components/Dashboard.js';
 import { initPomodoroTimer } from './components/PomodoroTimer.js';
 import { initHistory } from './components/History.js';
+import { initThemeSwitcher } from './components/ThemeSwitcher.js';
 import KeyboardManager from './utils/keyboard.js';
 import { TABS } from './utils/constants.js';
 
@@ -40,6 +41,7 @@ class App {
 
             // Initialize UI components
             initBalanceDisplay();
+            initThemeSwitcher();
             initTabNavigator();
             initDashboard();
             initPomodoroTimer();
@@ -120,8 +122,9 @@ class App {
     }
 
     registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            const serviceWorkerUrl = new URL('../service-worker.js', import.meta.url);
+            navigator.serviceWorker.register(serviceWorkerUrl.href)
                 .then((registration) => {
                     console.log('[App] Service Worker registered:', registration);
 

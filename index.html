@@ -6,11 +6,11 @@
     <title>AuraFlow - Pomodoro Gambler</title>
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00d084">
 
     <!-- iOS PWA Support -->
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AuraFlow">
@@ -32,7 +32,10 @@
         <header class="app-header">
             <div class="header-content">
                 <h1 class="app-title">AuraFlow</h1>
-                <div id="balance-display"></div>
+                <div class="header-actions">
+                    <div id="theme-switcher"></div>
+                    <div id="balance-display"></div>
+                </div>
             </div>
         </header>
 
@@ -68,6 +71,7 @@
     <script type="module" src="js/services/TimerService.js"></script>
     <script type="module" src="js/services/BettingService.js"></script>
     <script type="module" src="js/services/HistoryService.js"></script>
+    <script type="module" src="js/services/AnalyticsService.js"></script>
 
     <!-- Components -->
     <script type="module" src="js/components/BalanceDisplay.js"></script>
@@ -76,6 +80,7 @@
     <script type="module" src="js/components/Dashboard.js"></script>
     <script type="module" src="js/components/PomodoroTimer.js"></script>
     <script type="module" src="js/components/History.js"></script>
+    <script type="module" src="js/components/ThemeSwitcher.js"></script>
 
     <!-- Utils -->
     <script type="module" src="js/utils/constants.js"></script>
